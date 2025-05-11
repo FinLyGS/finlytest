@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Account Settings - Finly</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #111;
+      color: #fff;
+      padding: 20px;
+    }
+    .field {
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+    }
+    .error {
+      color: red;
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background: #0f0;
+      color: #000;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Edit your account</h1>
+  <form id="accountForm">
+    <div class="field">
+      <label>Display Name</label>
+      <input type="text" id="displayName" maxlength="25" />
+      <div class="error" id="displayNameError"></div>
+    </div>
+
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="userHandle" />
+      <div class="error" id="userHandleError"></div>
+    </div>
+
+    <div class="field">
+      <label>First Name</label>
+      <input type="text" id="userrealname" />
+    </div>
+
+    <div class="field">
+      <label>Last Name</label>
+      <input type="text" id="userlastname" />
+    </div>
+
+    <div class="field">
+      <label>Birthdate (DDMMYYYY)</label>
+      <input type="text" id="birthdate" placeholder="day, month year" />
+      <div class="error" id="birthdateError"></div>
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" disabled />
+    </div>
+
+    <div class="field">
+      <label>Profile Picture URL</label>
+      <input type="text" id="avatarUrl" />
+    </div>
+
+    <div class="field">
+      <label>Bio</label>
+      <input type="text" id="bio" />
+    </div>
+
+    <button type="submit">Save</button>
+  </form>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import {
+      getFirestore, doc, getDoc, setDoc
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import {
+      getAuth, onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      // coloque sua config aqui
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth();
+
+    function isEmoji(str) {
+      return /[\u{1F600}-\u{1F64F}]/u.test(str);
+    }
+
+    function validateForm(data) {
+      let valid = true;
+
+      ["displayName", "userHandle", "birthdate"].forEach(id => {
+        document.getElementById(id + "Error").textContent = "";
+      });
+
+      if (data.displayName.length > 25) {
+        document.getElementById("displayNameError").textContent = "Max 25 characters.";
+        valid = false;
+      }
+
+      const invalidChars = /[!#$%¨&*()\^~\[\]{}<>,:;|"'\/=@+\-]/;
+      if (data.userHandle.length < 3 || data.userHandle.length > 20 || invalidChars.test(data.userHandle) || isEmoji(data.userHandle)) {
+        document.getElementById("userHandleError").textContent = "Must be 3–20 characters and no symbols";
+        valid = false;
+      }
+
+      const bd = data.birthdate;
+      if (!/^\d{8}$/.test(bd)) {
+        document.getElementById("birthdateError").textContent = "Use format DDMMYYYY.";
+        valid = false;
+      } else {
+        const day = parseInt(bd.substring(0, 2));
+        const month = parseInt(bd.substring(2, 4)) - 1;
+        const year = parseInt(bd.substring(4));
+        const birth = new Date(year, month, day);
+        const today = new Date();
+        const age = today.getFullYear() - birth.getFullYear();
+        if (birth > today || age < 13) {
+          document.getElementById("birthdateError").textContent = "You must be at least 13 years old.";
+          valid = false;
+        }
+      }
+
+      return valid;
+    }
+
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+        const data = snap.exists() ? snap.data() : {};
+
+        document.getElementById("displayName").value = data.displayName || "";
+        document.getElementById("userHandle").value = data.userHandle || "";
+        document.getElementById("userrealname").value = data.userrealname || "";
+        document.getElementById("userlastname").value = data.userlastname || "";
+        document.getElementById("birthdate").value = data.birthdate || "day, month year";
+        document.getElementById("email").value = user.email;
+        document.getElementById("avatarUrl").value = data.avatarUrl || "https://media.finlysocial.xyz/pfp.png";
+        document.getElementById("bio").value = data.bio || "";
+
+        document.getElementById("accountForm").addEventListener("submit", async e => {
+          e.preventDefault();
+
+          const formData = {
+            displayName: document.getElementById("displayName").value.trim(),
+            userHandle: document.getElementById("userHandle").value.trim(),
+            userrealname: document.getElementById("userrealname").value.trim(),
+            userlastname: document.getElementById("userlastname").value.trim(),
+            birthdate: document.getElementById("birthdate").value.trim(),
+            avatarUrl: document.getElementById("avatarUrl").value.trim(),
+            bio: document.getElementById("bio").value.trim(),
+          };
+
+          if (validateForm(formData)) {
+            await setDoc(ref, {
+              ...data,
+              ...formData,
+            }, { merge: true });
+
+            alert("Profile updated!");
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
