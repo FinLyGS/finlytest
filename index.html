@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FinLy - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+  <script src="/auth/auth.js"></script>
+  <style>
+    .auth-box button,
+.auth-box .google-btns button,
+.auth-box a,
+.cookie,
+.left,
+.right {
+  user-select: none !important;
+}
+
+    
+   * {
+  font-family: 'Google Sans', sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: linear-gradient(135deg, #FFD2A1, #FFA6DC);
+  color: #5A1A1A;
+  overflow: auto;
+}
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 40px 30px 40px 40px;
+  position: relative;
+}
+
+.right {
+  background-color: rgba(255, 255, 255, 0.65);
+  border-radius: 30px;
+  padding: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  height: 530px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  transition: all 0.4s ease;
+}
+
+.cookie {
+  width: 80px;
+  position: absolute;
+  bottom: 20px;
+  left: 40px;
+  filter: brightness(0.9) sepia(1) hue-rotate(-20deg) saturate(1.5);
+}
+
+.left {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+}
+
+.left h2 {
+  font-size: 1.6rem;
+  line-height: 2.2rem;
+  max-width: 500px;
+}
+
+.left h2 strong {
+  font-weight: bold;
+}
+
+.auth-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 0.5s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-box h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.auth-box p {
+  margin-bottom: 10px;
+}
+
+.auth-box input,
+.auth-box textarea,
+select {
+  width: 100%;
+  padding: 14px;
+  border-radius: 20px;
+  background-color: #FFF8F4;
+  color: #5A1A1A;
+  border: 1px solid #f1c2c2;
+  margin-bottom: 15px;
+  font-size: 1rem;
+  outline: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.auth-box input::placeholder,
+.auth-box textarea::placeholder {
+  color: #c49b9b;
+}
+
+.auth-box textarea {
+  resize: vertical;
+  min-height: 150px;
+}
+
+.auth-box button.primary,
+.auth-box button.modal-btn {
+  width: 100%;
+  background: linear-gradient(90deg, #7C2A2A, #E24D4D);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 10px 0;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.auth-box button.primary:hover,
+.auth-box button.modal-btn:hover {
+  background: linear-gradient(90deg, #5e1e1e, #c43a3a);
+}
+
+.auth-box .small-text {
+  font-size: 0.85rem;
+  margin: 5px 0;
+}
+
+.auth-box a {
+  color: #A83838;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.auth-box a:hover {
+  text-decoration: underline;
+}
+
+.auth-box .google-btns {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.auth-box .google-btns button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 30px;
+  border: 1px solid #f0caca;
+  background-color: #fff;
+  color: #7C2A2A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.auth-box .google-btns button:hover {
+  background-color: #fef1f1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.auth-box .google-btns img {
+  width: 18px;
+  height: 18px;
+}
+
+.terms-box {
+  text-align: left;
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  padding: 10px;
+  border: 1px solid #e3b7b7;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  background: #FFF8F4;
+  color: #5A1A1A;
+}
+
+@media (max-width: 768px) {
+  .container {
+    justify-content: center;
+    padding: 0;
+  }
+  .right {
+    width: 100vw;
+    height: 100vh;
+    padding: 40px 20px;
+    border-radius: 0;
+    overflow-y: auto;
+  }
+  .left {
+    display: none;
+  }
+  .cookie {
+    width: 40px;
+    left: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-box h1 {
+    font-size: 1.5rem;
+  }
+  .auth-box input, .auth-box textarea {
+    padding: 10px;
+  }
+  .auth-box button.primary,
+  .auth-box button.modal-btn {
+    font-size: 1rem;
+    padding: 10px 0;
+  }
+  .auth-box .google-btns button {
+    padding: 8px;
+  }
+}
+
+/* Style for all select elements */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 12px 16px;
+  font-size: 16px;
+  border-radius: 8px;
+  background-color: #FFF8F4;
+  color: #5A1A1A;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+select:hover {
+  border-color: #d8a3a3;
+}
+
+select:focus {
+  outline: none;
+  border-color: #f28f8f;
+  box-shadow: 0 0 0 2px rgba(244, 115, 115, 0.2);
+}
+
+select:disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
+.dob-inputs select {
+  padding: 10px 12px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.dob-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 15px 0;
+}
+
+@media (max-width: 480px) {
+  .dob-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .dob-inputs select {
+    width: 100%;
+  }
+}
+
+/* DARK MODE */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(135deg, #2C0A0A, #1B0A1F);
+    color: #FFEAEA;
+  }
+
+  .right {
+    background-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 20px rgba(255, 100, 100, 0.1);
+    backdrop-filter: blur(10px);
+  }
+
+  .auth-box input,
+  .auth-box textarea,
+  select {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: #FFEAEA;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .auth-box input::placeholder,
+  .auth-box textarea::placeholder {
+    color: rgba(255, 220, 220, 0.4);
+  }
+
+  .auth-box .google-btns button {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #FFEAEA;
+  }
+
+  .auth-box .google-btns button:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .terms-box {
+    background: rgba(50, 10, 10, 0.5);
+    color: #FFEAEA;
+    border-color: #772929;
+  }
+
+  .auth-box a {
+    color: #FFAAAA;
+  }
+
+  .auth-box button.primary,
+  .auth-box button.modal-btn {
+    background: linear-gradient(90deg, #B23352, #FF679A);
+  }
+
+  .auth-box button.primary:hover,
+  .auth-box button.modal-btn:hover {
+    background: linear-gradient(90deg, #8A2642, #E24D80);
+  }
+
+  .cookie {
+    filter: brightness(1.2) sepia(1) hue-rotate(-20deg) saturate(2);
+  }
+}
+
+.migration-choice-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.migration-choice-buttons button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.migration-choice-buttons button img {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <h2><strong>Show the world</strong> who you are<br>and <strong>shine being yourself!</strong> ✨</h2>
+    </div>
+
+    <img src="https://media.finlysocial.xyz/logoPNG.png" alt="Cookie" class="cookie">
+
+    <div class="right" id="authBox">
+      <!-- Rendered via JavaScript -->
+    </div>
+  </div>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search); 
+  const region = urlParams.get('reg') || 'BR'; // Padrão é 'BR'
+  let currentView = 'dob';
+  let dobVerified = false; // Add flag to track DOB verification
+
+  function render() {
+    const authBox = document.getElementById("authBox");
+    let content = '';
+
+    if (currentView === 'login') {
+      content = `
+        <div class="auth-box">
+          <h1>Log-In to use your Account!</h1>
+          <p>Log-In to start using FinLy!</p>
+          <div class="google-btns">
+            <button onclick="signInWithGoogle()">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google"> 
+              Google
+            </button>
+            <button onclick="signInWithX()">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/twitter/twitter-original.svg" alt="X">
+              X
+            </button>
+          </div>
+          <input type="email" id="loginEmail" placeholder="Email" />
+          <input type="password" id="loginPassword" placeholder="Password" />
+          <p class="small-text">Forgot your password? <a onclick="switchView('forgot')">Reset it!</a></p>
+          <button class="primary" onclick="signInWithEmail()">Login</button>
+          <p class="small-text">Don't have an account? <a onclick="switchView('signup')">Sign up!</a></p>
+        </div>
+      `;
+    } 
+    else if (currentView === 'signup') {
+      content = `
+        <div class="auth-box">
+          <h1>Create Your Account Now!</h1>
+          <p>Create your account to start using FinLy!</p>
+          <div class="google-btns">
+            <button onclick="signInWithGoogle()">
+              <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google">
+              Google
+            </button>
+          </div>
+          <input type="email" id="signupEmail" placeholder="Email" />
+          <input type="password" id="signupPassword" placeholder="Password" />
+          <p class="small-text">
+            By creating an account, you agree to the <a onclick="switchView('tos')">Terms of Service</a>.
+          </p>
+          <button class="primary" onclick="signUpWithEmail()">Continue</button>
+          <p class="small-text">Already have an account? <a onclick="switchView('login')">Login!</a></p>
+        </div>
+      `;
+    } 
+    else if (currentView === 'dob') {
+      content = `
+        <div class="auth-box">
+          <h1>When were you born?</h1>
+          <p>We need to verify your age to comply with regulations.</p>
+          
+          <div class="dob-inputs">
+            <select id="dobDay">
+              <option value="" disabled selected>Day</option>
+              ${Array.from({length: 31}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('')}
+            </select>
+            
+            <select id="dobMonth">
+              <option value="" disabled selected>Month</option>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+            
+            <select id="dobYear">
+              <option value="" disabled selected>Year</option>
+              ${Array.from({length: 100}, (_, i) => {
+                const year = new Date().getFullYear() - i;
+                return `<option value="${year}">${year}</option>`;
+              }).join('')}
+            </select>
+          </div>
+          
+          <p class="small-text">You must be at least 13 years old to use FinLy.</p>
+          <button class="primary" onclick="verifyAge()">Continue</button>
+        </div>
+      `;
+    }
+    else if (currentView === 'forgot') {
+      content = `
+        <div class="auth-box">
+          <h1>Reset Password</h1>
+          <p>Enter your email to receive reset instructions.</p>
+          <input type="email" id="resetEmail" placeholder="Your email" />
+          <button class="primary" onclick="resetPassword()">Send</button>
+          <p class="small-text"><a onclick="switchView('login')">Back to login</a></p>
+        </div>
+      `;
+    } 
+    else if (currentView === 'tos') {
+      let tosContent = '';
+
+      if (region === 'US') {
+        tosContent = `
+          <h1>Terms of Service - United States</h1>
+          <div class="terms-box">
+            <div class="terms-section">
+              <h2>1. Acceptance of Terms</h2>
+              <p>By accessing or using FinLy ("the Platform"), you agree to be bound by these Terms of Service and all applicable U.S. laws, including the California Consumer Privacy Act (CCPA) and the Children's Online Privacy Protection Act (COPPA).</p>
+            </div>
+            <div class="terms-section">
+              <h2>2. Service Description</h2>
+              <p>FinLy is a personal finance platform that helps users track spending, create budgets, and gain financial insights.</p>
+            </div>
+            <div class="terms-section">
+              <h2>3. User Responsibilities</h2>
+              <p>3.1 You must provide accurate and current information.</p>
+              <p>3.2 You are responsible for securing your account and password.</p>
+              <p>3.3 Notify FinLy immediately in case of unauthorized access or security issues.</p>
+            </div>
+            <div class="terms-section">
+              <h2>4. Data Protection and Privacy</h2>
+              <p>4.1 Your personal data is handled under CCPA and other U.S. privacy laws.</p>
+              <p>4.2 You have the right to request disclosure, correction, or deletion of your personal data.</p>
+            </div>
+            <div class="terms-section">
+              <h2>5. Age Requirements</h2>
+              <p>5.1 You must be at least 13 years old to use FinLy, in accordance with COPPA.</p>
+            </div>
+            <div class="terms-section">
+              <h2>6. Modifications to Terms</h2>
+              <p>6.1 FinLy may update these Terms at any time.</p>
+              <p>6.2 Continued use of the Platform means acceptance of the new Terms.</p>
+            </div>
+            <div class="terms-section">
+              <h2>7. General Provisions</h2>
+              <p>7.1 These Terms are governed by U.S. law and the laws of the State of California.</p>
+              <p>7.2 If any part is invalid, the rest remains in effect.</p>
+              <p>7.3 These Terms are the entire agreement between you and FinLy.</p>
+            </div>
+          </div>
+        `;
+      } else if (region === 'EU') {
+        tosContent = `
+          <h1>Terms of Service - European Union</h1>
+          <div class="terms-box">
+            <div class="terms-section">
+              <h2>1. Acceptance of Terms</h2>
+              <p>By using FinLy, you agree to comply with the General Data Protection Regulation (GDPR) and applicable EU legislation.</p>
+            </div>
+            <div class="terms-section">
+              <h2>2. Service Description</h2>
+              <p>FinLy helps users track income and expenses, categorize spending, and plan finances across EU countries.</p>
+            </div>
+            <div class="terms-section">
+              <h2>3. User Responsibilities</h2>
+              <p>3.1 Provide accurate, updated data and use the Platform responsibly.</p>
+              <p>3.2 Maintain confidentiality of credentials.</p>
+              <p>3.3 Notify us of unauthorized activity or access.</p>
+            </div>
+            <div class="terms-section">
+              <h2>4. Data Protection and Privacy</h2>
+              <p>4.1 All personal data is processed in line with GDPR principles.</p>
+              <p>4.2 You may access, modify, or delete your data at any time.</p>
+              <p>4.3 You may withdraw consent for data processing at any time.</p>
+            </div>
+            <div class="terms-section">
+              <h2>5. Age Requirements</h2>
+              <p>5.1 You must be at least 16 years old to use FinLy in most EU countries. Lower ages may apply with parental consent.</p>
+            </div>
+            <div class="terms-section">
+              <h2>6. Modifications to Terms</h2>
+              <p>6.1 Terms may be updated periodically.</p>
+              <p>6.2 Your continued use implies acceptance of updates.</p>
+            </div>
+            <div class="terms-section">
+              <h2>7. General Provisions</h2>
+              <p>7.1 These Terms are governed by EU law and the laws of your country of residence.</p>
+              <p>7.2 Invalid clauses do not affect the rest of the agreement.</p>
+              <p>7.3 These Terms form the entire agreement between you and FinLy.</p>
+            </div>
+          </div>
+        `;
+      } else {
+        tosContent = `
+          <h1>Terms of Service - Brazil</h1>
+          <div class="terms-box">
+            <div class="terms-section">
+              <h2>1. Acceptance of Terms</h2>
+              <p>By accessing or using FinLy ("the Platform"), you agree to be bound by these Terms of Service and all applicable Brazilian laws, including but not limited to the Lei Geral de Proteção de Dados (LGPD - Law No. 13.709/2018) and the Consumer Protection Code (Law No. 8.078/1990).</p>
+            </div>
+            <div class="terms-section">
+              <h2>2. Service Description</h2>
+              <p>FinLy is a personal finance management platform designed to help users organize, track, and control their financial expenses and income.</p>
+            </div>
+            <div class="terms-section">
+              <h2>3. User Responsibilities</h2>
+              <p>3.1 You must provide accurate, current, and complete information during registration and maintain the accuracy of such information.</p>
+              <p>3.2 You are solely responsible for maintaining the confidentiality of your login credentials and for all activities that occur under your account.</p>
+              <p>3.3 You agree to immediately notify FinLy of any unauthorized use of your account or any other security breaches.</p>
+            </div>
+            <div class="terms-section">
+              <h2>4. Data Protection and Privacy</h2>
+              <p>4.1 In compliance with LGPD, we process your personal data with transparency, security, and respect for your privacy rights.</p>
+              <p>4.2 Our data collection and processing practices are detailed in our Privacy Policy, which forms an integral part of these Terms.</p>
+              <p>4.3 You have the right to access, correct, or delete your personal data in accordance with applicable law.</p>
+            </div>
+            <div class="terms-section">
+              <h2>5. Age Requirements</h2>
+              <p>5.1 You must be at least 13 years old to create an account on FinLy.</p>
+              <p>5.2 If you are under 18 years old, you confirm that you have obtained parental or guardian consent to use our services.</p>
+            </div>
+            <div class="terms-section">
+              <h2>6. Modifications to Terms</h2>
+              <p>6.1 We reserve the right to modify these Terms at any time. All changes will be effective immediately upon posting on the Platform.</p>
+              <p>6.2 Your continued use of the Platform after such modifications constitutes your acceptance of the revised Terms.</p>
+              <p>6.3 It is your responsibility to review these Terms periodically for updates.</p>
+            </div>
+            <div class="terms-section">
+              <h2>7. General Provisions</h2>
+              <p>7.1 These Terms shall be governed by and construed in accordance with the laws of Brazil.</p>
+              <p>7.2 If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions shall remain in full force and effect.</p>
+              <p>7.3 Our failure to enforce any right or provision of these Terms shall not constitute a waiver of such right or provision.</p>
+              <p>7.4 These Terms constitute the entire agreement between you and FinLy regarding the use of our services.</p>
+            </div>
+          </div>
+        `;
+      }
+
+      content = `
+        <div class="auth-box">
+          ${tosContent}
+          <button class="primary" onclick="switchView('signup')">Accept and Continue</button>
+          <p class="small-text"><a onclick="switchView('signup')" class="back-link">Back to Sign Up</a></p>
+        </div>
+      `;
+    }
+    else if (currentView === 'migration-choice') {
+      content = `
+        <div class="auth-box">
+          <h1>Welcome to FinLy test ambient</h1>
+          <p>Click start to continue</p>
+          
+          <div class="migration-choice-buttons">
+            <button class="primary" onclick="window.location.href='/auth/setup'">
+              <img src="https://media.finlysocial.xyz/logoPNG.png" alt="FinLy Logo">
+              Start
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    authBox.innerHTML = content;
+  }
+
+  function switchView(view) {
+    // Prevent direct navigation to signup/login without DOB verification
+    if ((view === 'signup' || view === 'login') && !dobVerified) {
+      currentView = 'dob';
+    } else {
+      currentView = view;
+    }
+    render();
+  }
+
+  function verifyAge() {
+    const day = document.getElementById('dobDay').value;
+    const month = document.getElementById('dobMonth').value;
+    const year = document.getElementById('dobYear').value;
+    
+    if (!day || !month || !year) {
+      alert('Please fill in all date fields');
+      return;
+    }
+    
+    const birthDate = new Date(year, month - 1, day);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    if (age < 13) {
+      alert('You must be at least 13 years old to use FinLytest.');
+      return;
+    }
+
+    dobVerified = true; // Set flag when age is verified
+    switchView('signup');
+  }
+
+  render();
+</script>
+</body>
+</html>
